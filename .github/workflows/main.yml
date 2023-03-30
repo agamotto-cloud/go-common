@@ -1,0 +1,39 @@
+name: 同步 admin-server pkg 到 go-common admin
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sync_folder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取 admin-server 代码
+        uses: actions/checkout@v2
+        with:
+          repository: agamotto-cloud/admin-server
+          ref: main
+          path: admin-server
+
+      - name: 拉取 go-common 代码
+        uses: actions/checkout@v2
+        with:
+          repository: agamotto-cloud/go-common
+          ref: main
+          path: go-common
+
+      - name: 复制文件夹到 go-common
+        run: cp -r admin-server/pkg go-common/admin
+
+      - name: 提交和推送到 go-common
+        run: |
+          echo "同步开始 ${{ github.token }}"
+          cd go-common
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+          git add admin
+          git commit -m "同步 admin-server pkg 到 go-common admin "
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
