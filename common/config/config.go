@@ -31,18 +31,18 @@ func init() {
 	if err != nil {
 		log.Fatalf("加载配置文件失败: %v", err)
 	}
-
 	err = yaml.Unmarshal(configData, &ConfigProps)
 	if err != nil {
 		log.Fatalf("读取配置文件失败: %v", err)
 	}
+	serverName := ConfigProps["server"].(map[string]interface{})["name"].(string)
 	//初始化redis
 	redisConfig := GetConfig("redis", data.RedisConfig{})
 	data.InitRedis(redisConfig)
 
 	//从命令行参数中获取当前运行环境
 
-	configKey := "config:service:admin-server:" + env
+	configKey := "config:service:" + serverName + ":" + env
 	// 从redis中获取配置
 	redisConfigData, err := data.RedisClient.Get(context.Background(), configKey).Result()
 	if err != nil {
@@ -83,4 +83,5 @@ func GetConfig[T any](configKey string, serverConfig T) *T {
 
 type ServerConfig struct {
 	Port int
+	Name string
 }
