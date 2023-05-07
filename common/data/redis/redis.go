@@ -1,4 +1,4 @@
-package data
+package redis
 
 import (
 	"context"

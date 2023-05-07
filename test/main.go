@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/agamotto-cloud/go-common/common/config"
+	data "github.com/agamotto-cloud/go-common/common/data/db"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
@@ -18,4 +19,5 @@ func main() {
 	if err != nil {
 		log.Fatal("server start error", err.Error())
 	}
+	data.GlobalDB.Exec("select 1 from dual")
 }

@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 	"flag"
-	"github.com/agamotto-cloud/go-common/common/data"
+	"github.com/agamotto-cloud/go-common/common/data/redis"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -37,14 +37,14 @@ func init() {
 	}
 	serverName := ConfigProps["server"].(map[string]interface{})["name"].(string)
 	//初始化redis
-	redisConfig := GetConfig("redis", data.RedisConfig{})
-	data.InitRedis(redisConfig)
+	redisConfig := GetConfig("redis", redis.RedisConfig{})
+	redis.InitRedis(redisConfig)
 
 	//从命令行参数中获取当前运行环境
 
 	configKey := "config:service:" + serverName + ":" + env
 	// 从redis中获取配置
-	redisConfigData, err := data.RedisClient.Get(context.Background(), configKey).Result()
+	redisConfigData, err := redis.RedisClient.Get(context.Background(), configKey).Result()
 	if err != nil {
 		log.Println("读取redis配置文件失败: ", configKey, err)
 		return
@@ -79,9 +79,4 @@ func GetConfig[T any](configKey string, serverConfig T) *T {
 	}
 	ConfigMap[configKey] = serverConfig
 	return &serverConfig
-}
-
-type ServerConfig struct {
-	Port int
-	Name string
 }

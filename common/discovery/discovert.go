@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/agamotto-cloud/go-common/common/config"
-	"github.com/agamotto-cloud/go-common/common/data"
+	"github.com/agamotto-cloud/go-common/common/data/redis"
 	"log"
 	"net"
 	"os"
@@ -65,9 +65,9 @@ func updateServerNode() {
 	jsonStr, _ := json.Marshal(serverNodeInfo)
 	log.Println("service discover info :", string(jsonStr))
 	serverKey := "service:" + serverConfig.Name
-	data.RedisClient.HSet(context.Background(), serverKey, serverNodeInfo.Address+":"+strconv.Itoa(serverNodeInfo.Port), jsonStr)
-	data.RedisClient.Expire(context.Background(), serverKey, time.Hour)
-	result, err := data.RedisClient.HGetAll(context.Background(), serverKey).Result()
+	redis.RedisClient.HSet(context.Background(), serverKey, serverNodeInfo.Address+":"+strconv.Itoa(serverNodeInfo.Port), jsonStr)
+	redis.RedisClient.Expire(context.Background(), serverKey, time.Hour)
+	result, err := redis.RedisClient.HGetAll(context.Background(), serverKey).Result()
 	if err != nil {
 		log.Println("获取服务列表失败", err.Error())
 		return
@@ -76,7 +76,7 @@ func updateServerNode() {
 	//剔除掉超时的服务 超时时间为10分钟
 	for i, v := range serverList {
 		if time.Now().Unix()-v.ActiveLastTime > 600 {
-			data.RedisClient.HDel(context.Background(), serverKey, v.Address+":"+strconv.Itoa(v.Port))
+			redis.RedisClient.HDel(context.Background(), serverKey, v.Address+":"+strconv.Itoa(v.Port))
 			serverList = append(serverList[:i], serverList[i+1:]...)
 		}
 	}
@@ -85,7 +85,7 @@ func updateServerNode() {
 // 服务关闭的处理
 func closeServer() {
 	serverKey := "service:" + config.GetServerConfig().Name
-	data.RedisClient.HDel(context.Background(), serverKey, serverNodeInfo.Address+":"+strconv.Itoa(serverNodeInfo.Port))
+	redis.RedisClient.HDel(context.Background(), serverKey, serverNodeInfo.Address+":"+strconv.Itoa(serverNodeInfo.Port))
 }
 
 // 将map转换为ServerNode数组
