@@ -27,7 +27,14 @@ func Result(code ErrorCode, data interface{}, msg string, c *gin.Context) {
 func Ok(c *gin.Context) {
 	Result(0, map[string]interface{}{}, "操作成功", c)
 }
-
+func Error(err error, c *gin.Context) {
+	e, ok := err.(ErrorCode)
+	if ok {
+		Result(e, map[string]interface{}{}, e.String(), c)
+		return
+	}
+	Result(10001, gin.H{}, err.Error(), c)
+}
 func OkWithMessage(message string, c *gin.Context) {
 	Result(0, map[string]interface{}{}, message, c)
 }

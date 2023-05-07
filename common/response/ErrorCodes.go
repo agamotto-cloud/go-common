@@ -26,3 +26,7 @@ func (e ErrorCode) String() string {
 		return "未知错误"
 	}
 }
+
+func (e ErrorCode) Error() string {
+	return e.String()
+}
