@@ -2,6 +2,12 @@ package response
 
 type ErrorCode int
 
+type AgamottoError interface {
+	String() string
+	Error() string
+	GetCode() int
+}
+
 const (
 	SystemError   ErrorCode = 7
 	ParamError    ErrorCode = 1
@@ -29,4 +35,8 @@ func (e ErrorCode) String() string {
 
 func (e ErrorCode) Error() string {
 	return e.String()
+}
+
+func (e ErrorCode) GetCode() int {
+	return int(e)
 }

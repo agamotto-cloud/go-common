@@ -28,9 +28,13 @@ func Ok(c *gin.Context) {
 	Result(0, map[string]interface{}{}, "操作成功", c)
 }
 func Error(err error, c *gin.Context) {
-	e, ok := err.(ErrorCode)
+	e, ok := err.(AgamottoError)
 	if ok {
-		Result(e, map[string]interface{}{}, e.String(), c)
+		c.JSON(http.StatusOK, RespEntity{
+			int(e.GetCode()),
+			"",
+			err.Error(),
+		})
 		return
 	}
 	Result(10001, gin.H{}, err.Error(), c)
@@ -55,13 +59,6 @@ func FailWithDetailed(data interface{}, message string, c *gin.Context) {
 	Result(SystemError, data, message, c)
 }
 
-func ResultCode(code ErrorCode, c *gin.Context) {
-	if code == 0 {
-		OkWithData(map[string]interface{}{}, c)
-	} else {
-		Result(code, map[string]interface{}{}, code.String(), c)
-	}
-}
 func ResultCodeMessage(code ErrorCode, message string, c *gin.Context) {
 	if code == 0 {
 		OkWithData(map[string]interface{}{}, c)
