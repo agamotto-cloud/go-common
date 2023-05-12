@@ -6,8 +6,6 @@ replace github.com/agamotto-cloud/go-common/common => ../common
 
 require (
 	github.com/agamotto-cloud/go-common/common v1.0.0
-	github.com/gin-gonic/gin v1.9.0
-
 )
 
 require (
