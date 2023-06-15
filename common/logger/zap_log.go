@@ -2,32 +2,37 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/trace"
 	"os"
-	"strconv"
+	"strings"
 	"time"
 )
 
-func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	zerolog.CallerMarshalFunc = setLogMarshalFunc
-	zerolog.CallerSkipFrameCount = 3
-	log.Info().Interface("test", "test").Msg("test")
-}
+//还需要给这个log集成分布式日志追踪，用最流行的那个开源的opentracing
 
-func setLogMarshalFunc(pc uintptr, file string, line int) string {
-	short := file
-	for i := len(file) - 1; i > 0; i-- {
-		if file[i] == '/' {
-			short = file[i+1:]
-			break
-		}
+func init() {
+	output := zerolog.ConsoleWriter{
+		Out: os.Stdout,
+		FormatTimestamp: func(i interface{}) string {
+			parse, _ := time.Parse(time.RFC3339, i.(string))
+			return parse.Format("2006-01-02 15:04:05")
+		},
+		FormatLevel: func(i interface{}) string {
+			return strings.ToUpper(fmt.Sprintf(" %-6s ", i))
+		},
 	}
-	file = short
-	return file + ":" + strconv.Itoa(line)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	log.Logger = zerolog.New(output).With().
+		Timestamp().CallerWithSkipFrameCount(2).Logger()
+	//zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+
+	//zerolog.CallerMarshalFunc = setLogMarshalFunc
+	//zerolog.CallerSkipFrameCount = 3
+	log.Info().Msg("logger init success")
 }
 
 type C struct {
@@ -56,27 +61,39 @@ type Interface interface {
 }
 
 type Log struct {
-	ctx context.Context
+	ctx    context.Context
+	span   trace.Span
+	logger *zerolog.Logger
 }
 
-func GetLog(ctx context.Context) Log {
-	return Log{ctx: ctx}
+func GetLog(ctx context.Context) zerolog.Logger {
+	span := trace.SpanFromContext(ctx)
+	span.SpanContext()
+	logger := log.Logger.With().
+		Str("span_id", span.SpanContext().SpanID().String()).
+		Str("trace_id", span.SpanContext().TraceID().String()).
+		Logger()
+	logger.WithContext(ctx)
+	return logger
+
 }
 
 func (l Log) Debug(msg string, data ...interface{}) {
-	log.Debug().Msg(msg)
+
+	l.logger.Debug().Msg(msg)
 }
 
 func (l Log) Info(msg string, data ...interface{}) {
-	log.Info().Msg(msg)
+
+	l.logger.Info().Msg(msg)
 }
 
 func (l Log) Warn(msg string, data ...interface{}) {
-	log.Warn().Msg(msg)
+	l.logger.Warn().Msg(msg)
 }
 
 func (l Log) Error(msg string, data ...interface{}) {
-	log.Error().Msg(msg)
+	l.logger.Error().Msg(msg)
 }
 
 func Debug(ctx context.Context, msg string, data ...interface{}) {
