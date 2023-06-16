@@ -29,8 +29,6 @@ func init() {
 
 	log.Logger = zerolog.New(output).With().
 		Timestamp().CallerWithSkipFrameCount(2).Logger()
-
-	log.Info().Msg("logger init success")
 }
 
 type C struct {

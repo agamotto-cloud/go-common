@@ -2,6 +2,7 @@ package main
 
 import (
 	data "github.com/agamotto-cloud/go-common/common/data/db"
+	_ "github.com/agamotto-cloud/go-common/common/discovery"
 	"github.com/agamotto-cloud/go-common/common/start"
 )
 

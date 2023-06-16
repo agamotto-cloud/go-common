@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/agamotto-cloud/go-common/common/config"
 	"github.com/agamotto-cloud/go-common/common/data/redis"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net"
 	"os"
 	"os/signal"
@@ -42,7 +42,7 @@ func init() {
 			case <-sigs:
 				// 接收到关闭信号
 				closeServer()
-				log.Println("停止服务")
+				log.Info().Msg("停止服务")
 				go func() {
 					os.Exit(0)
 				}()
@@ -63,13 +63,13 @@ func updateServerNode() {
 		serverNodeInfo.Info = getServerInfoFunc(serverNodeInfo)
 	}
 	jsonStr, _ := json.Marshal(serverNodeInfo)
-	log.Println("service discover info :", string(jsonStr))
+	log.Info().Msgf("service discover info :%s", string(jsonStr))
 	serverKey := "service:" + serverConfig.Name
 	redis.RedisClient.HSet(context.Background(), serverKey, serverNodeInfo.Address+":"+strconv.Itoa(serverNodeInfo.Port), jsonStr)
 	redis.RedisClient.Expire(context.Background(), serverKey, time.Hour)
 	result, err := redis.RedisClient.HGetAll(context.Background(), serverKey).Result()
 	if err != nil {
-		log.Println("获取服务列表失败", err.Error())
+		log.Error().Msgf("获取服务列表失败 %s", err.Error())
 		return
 	}
 	serverList := mapsToServerList(result)
@@ -95,7 +95,8 @@ func mapsToServerList(maps map[string]string) []ServerNode {
 		var serverNode ServerNode
 		err := json.Unmarshal([]byte(v), &serverNode)
 		if err != nil {
-			log.Println("json转换失败", err.Error())
+			log.Error().Msgf("json转换失败 %s", err.Error())
+
 			continue
 		}
 		serverList = append(serverList, serverNode)

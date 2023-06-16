@@ -5,8 +5,8 @@ import (
 	"flag"
 	"github.com/agamotto-cloud/go-common/common/data/redis"
 	"github.com/mitchellh/mapstructure"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
-	"log"
 	"os"
 )
 
@@ -24,16 +24,16 @@ func init() {
 	if env == "" {
 		env = "dev"
 	}
-	log.Println("加载服务器配置 ", env)
+	log.Info().Msgf("加载服务器配置 %s", env)
 
 	// 读取本地配置文件
 	configData, err := os.ReadFile("config.yaml")
 	if err != nil {
-		log.Fatalf("加载配置文件失败: %v", err)
+		log.Fatal().Msgf("加载配置文件失败: %v", err)
 	}
 	err = yaml.Unmarshal(configData, &ConfigProps)
 	if err != nil {
-		log.Fatalf("读取配置文件失败: %v", err)
+		log.Fatal().Msgf("读取配置文件失败: %v", err)
 	}
 	serverName := ConfigProps["server"].(map[string]interface{})["name"].(string)
 	//初始化redis
@@ -46,14 +46,14 @@ func init() {
 	// 从redis中获取配置
 	redisConfigData, err := redis.RedisClient.Get(context.Background(), configKey).Result()
 	if err != nil {
-		log.Println("读取redis配置文件失败: ", configKey, err)
+		log.Print("读取redis配置文件失败: ", configKey, err)
 		return
 	}
 
 	var redisMap map[string]interface{}
 	err = yaml.Unmarshal([]byte(redisConfigData), &redisMap)
 	if err != nil {
-		log.Fatalf("读取redis配置文件失败: %v", err)
+		log.Fatal().Err(err).Msg("读取redis配置文件失败")
 	}
 	// 将redis中的配置和本地配置合并
 	for k, v := range redisMap {
@@ -75,7 +75,7 @@ func GetConfig[T any](configKey string, serverConfig T) *T {
 
 	err := mapstructure.Decode(ConfigProps[configKey], &serverConfig)
 	if err != nil {
-		log.Fatalf("读取配置文件失败: %v", err)
+		log.Fatal().Err(err).Msg("读取配置文件失败")
 	}
 	ConfigMap[configKey] = serverConfig
 	return &serverConfig
