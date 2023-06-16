@@ -9,7 +9,7 @@ func main() {
 	// 加载配置文件
 	//data.Init()
 
-	start.HttpServer()
+	start.HttpServer(nil)
 
 	data.GlobalDB.Exec("select 1 from dual")
 	//logger.GetLogger().Info("server exit")
