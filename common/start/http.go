@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/agamotto-cloud/go-common/common/config"
 	"github.com/agamotto-cloud/go-common/common/logger"
+	"github.com/agamotto-cloud/go-common/common/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -21,6 +22,9 @@ func HttpServer(routerReg func(r *gin.Engine)) {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(Logger())
+	router.NoRoute(func(c *gin.Context) {
+		response.Error(response.NotFoundError, c)
+	})
 	if routerReg != nil {
 		routerReg(router)
 	}

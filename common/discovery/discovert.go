@@ -63,7 +63,6 @@ func updateServerNode() {
 		serverNodeInfo.Info = getServerInfoFunc(serverNodeInfo)
 	}
 	jsonStr, _ := json.Marshal(serverNodeInfo)
-	log.Info().Msgf("service discover info :%s", string(jsonStr))
 	serverKey := "service:" + serverConfig.Name
 	redis.RedisClient.HSet(context.Background(), serverKey, serverNodeInfo.Address+":"+strconv.Itoa(serverNodeInfo.Port), jsonStr)
 	redis.RedisClient.Expire(context.Background(), serverKey, time.Hour)
