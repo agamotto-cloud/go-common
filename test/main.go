@@ -12,7 +12,12 @@ import (
 func main() {
 	// 加载配置文件
 	//data.Init()
-	r := discovery.GetServiceList(context.Background(), "admin")
+	discovery.SetServerInfoFunc(func(node discovery.ServerNode[any]) interface{} {
+		return map[string]any{
+			"name": "test",
+		}
+	})
+	r := discovery.GetServiceList[any](context.Background(), "test")
 	for _, node := range r {
 		//用json的格式打印node
 		d, _ := json.Marshal(node)

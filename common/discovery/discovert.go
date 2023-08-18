@@ -14,17 +14,17 @@ import (
 	"time"
 )
 
-type ServerNode struct {
-	ActiveLastTime int64       `json:"activeLastTime"`
-	Address        string      `json:"Address"`
-	Port           int         `json:"port"`
-	Info           interface{} `json:"info"`
+type ServerNode[T any] struct {
+	ActiveLastTime int64  `json:"activeLastTime"`
+	Address        string `json:"Address"`
+	Port           int    `json:"port"`
+	Info           T      `json:"info"`
 }
 
-var serverNodeInfo = ServerNode{}
+var serverNodeInfo = ServerNode[interface{}]{}
 
 func init() {
-	serverNodeInfo = ServerNode{
+	serverNodeInfo = ServerNode[interface{}]{
 		ActiveLastTime: time.Now().Unix(),
 		Address:        getLocalIP(),
 		Port:           8080,
@@ -71,7 +71,7 @@ func updateServerNode() {
 		log.Error().Msgf("获取服务列表失败 %s", err.Error())
 		return
 	}
-	serverList := mapsToServerList(result)
+	serverList := mapsToServerList[any](result)
 	//剔除掉超时的服务 超时时间为10分钟
 	for i, v := range serverList {
 		if time.Now().Unix()-v.ActiveLastTime > 600 {
@@ -88,10 +88,10 @@ func closeServer() {
 }
 
 // 将map转换为ServerNode数组
-func mapsToServerList(maps map[string]string) []ServerNode {
-	var serverList = make([]ServerNode, 0)
+func mapsToServerList[T any](maps map[string]string) []ServerNode[T] {
+	var serverList = make([]ServerNode[T], 0)
 	for _, v := range maps {
-		var serverNode ServerNode
+		var serverNode ServerNode[T]
 		err := json.Unmarshal([]byte(v), &serverNode)
 		if err != nil {
 			log.Error().Msgf("json转换失败 %s", err.Error())
@@ -103,10 +103,10 @@ func mapsToServerList(maps map[string]string) []ServerNode {
 	return serverList
 }
 
-var getServerInfoFunc func(serverNode ServerNode) interface{}
+var getServerInfoFunc func(serverNode ServerNode[any]) any
 
 // SetServerInfoFunc 设置服务信息的函数，参数是一个函数,保存这个函数,在updateServerNode方法中会定时调用这个函数
-func SetServerInfoFunc(f func(serverNode ServerNode) interface{}) {
+func SetServerInfoFunc(f func(serverNode ServerNode[any]) any) {
 	getServerInfoFunc = f
 }
 
