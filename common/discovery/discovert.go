@@ -15,7 +15,7 @@ import (
 )
 
 type ServerNode[T any] struct {
-	ActiveLastTime int64  `json:"activeLastTime"`
+	ActiveLastTime int64  `json:"activeLastTime"` // 最后一次心跳时间
 	Address        string `json:"Address"`
 	Port           int    `json:"port"`
 	Info           T      `json:"info"`
@@ -60,7 +60,7 @@ func updateServerNode() {
 	serverNodeInfo.ActiveLastTime = time.Now().Unix()
 	serverNodeInfo.Port = serverConfig.Port
 	if getServerInfoFunc != nil {
-		serverNodeInfo.Info = getServerInfoFunc(serverNodeInfo)
+		serverNodeInfo.Info = getServerInfoFunc.(func(serverNode ServerNode[any]) any)(serverNodeInfo)
 	}
 	jsonStr, _ := json.Marshal(serverNodeInfo)
 	serverKey := "service:" + serverConfig.Name
@@ -103,10 +103,10 @@ func mapsToServerList[T any](maps map[string]string) []ServerNode[T] {
 	return serverList
 }
 
-var getServerInfoFunc func(serverNode ServerNode[any]) any
+var getServerInfoFunc any
 
 // SetServerInfoFunc 设置服务信息的函数，参数是一个函数,保存这个函数,在updateServerNode方法中会定时调用这个函数
-func SetServerInfoFunc(f func(serverNode ServerNode[any]) any) {
+func SetServerInfoFunc[T any](f func(serverNode ServerNode[T]) T) {
 	getServerInfoFunc = f
 }
 
