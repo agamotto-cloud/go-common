@@ -17,6 +17,8 @@ func main() {
 			"name": "test",
 		}
 	})
+	//api := discovery.GetServiceList[any](context.Background(), "test")
+	//CreateUserRequest := struct {
 	r := discovery.GetServiceList[any](context.Background(), "test")
 	for _, node := range r {
 		//用json的格式打印node
