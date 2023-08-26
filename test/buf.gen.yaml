@@ -1,0 +1,12 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/agamotto-cloud/go-common/test/pkg/api
+plugins:
+  - plugin: buf.build/protocolbuffers/go
+    out: pkg/api
+    opt: paths=source_relative
+  - plugin: buf.build/connectrpc/go
+    out: pkg/api
+    opt: paths=source_relative

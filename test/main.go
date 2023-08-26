@@ -1,6 +1,7 @@
 package main
 
 import (
+	"buf.build/gen/go/agamotto/test/protocolbuffers/go/proto/user"
 	"context"
 	"encoding/json"
 	data "github.com/agamotto-cloud/go-common/common/data/db"
@@ -17,6 +18,9 @@ func main() {
 			"name": "test",
 		}
 	})
+	userRequest := user.CreateUserRequest{
+		Name: "test",
+	}
 	//api := discovery.GetServiceList[any](context.Background(), "test")
 	//CreateUserRequest := struct {
 	r := discovery.GetServiceList[any](context.Background(), "test")
