@@ -31,6 +31,8 @@ func init() {
 }
 
 func CreateSpan(ctx context.Context, operationName string) (context.Context, trace.Span) {
+	//logg := log.Ctx(ctx)
+	log.Logger.Info().Any("trace", ctx.Value("trace_id")).Msg("CreateSpan")
 	// 创建一个 Span
 	c, span := tracer.Start(ctx, operationName)
 	//从c里面取出traceId和spanId

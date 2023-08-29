@@ -1,6 +1,7 @@
 package main
 
 import (
+	"buf.build/gen/go/agamotto/test/grpc/go/proto/user/usergrpc"
 	"buf.build/gen/go/agamotto/test/protocolbuffers/go/proto/user"
 	"context"
 	"encoding/json"
@@ -33,7 +34,8 @@ func main() {
 		d, _ := json.Marshal(node)
 		println(string(d))
 	}
-	go start.RpcServer(func(s *grpc.Server) {
+	go start.RpcServer(func(srv *grpc.Server) {
+		usergrpc.RegisterUserServiceServer(srv, rpc.UserServiceServer{})
 	})
 	go rpc.CallRpc()
 	start.HttpServer(nil)
