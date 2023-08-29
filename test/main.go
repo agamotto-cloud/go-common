@@ -8,6 +8,9 @@ import (
 	"github.com/agamotto-cloud/go-common/common/discovery"
 	_ "github.com/agamotto-cloud/go-common/common/discovery"
 	"github.com/agamotto-cloud/go-common/common/start"
+	"github.com/agamotto-cloud/go-common/test/rpc"
+	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -18,9 +21,10 @@ func main() {
 			"name": "test",
 		}
 	})
-	userRequest := user.CreateUserRequest{
-		Name: "test",
+	userRequest := &user.CreateUserRequest{
+		Username: "test",
 	}
+	log.Info().Msgf("userRequest %v", userRequest)
 	//api := discovery.GetServiceList[any](context.Background(), "test")
 	//CreateUserRequest := struct {
 	r := discovery.GetServiceList[any](context.Background(), "test")
@@ -29,9 +33,12 @@ func main() {
 		d, _ := json.Marshal(node)
 		println(string(d))
 	}
-
+	go start.RpcServer(func(s *grpc.Server) {
+	})
+	go rpc.CallRpc()
 	start.HttpServer(nil)
 
 	data.GlobalDB.Exec("select 1 from dual")
+
 	//logger.GetLogger().Info("server exit")
 }

@@ -21,7 +21,7 @@ func HttpServer(routerReg func(r *gin.Engine)) {
 	log.Info().Int("port", serverConfig.Port).Msg("server start")
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(Logger())
+	router.Use(loggerHandle())
 	router.NoRoute(func(c *gin.Context) {
 		response.Error(response.NotFoundError, c)
 	})
@@ -56,7 +56,7 @@ func HttpServer(routerReg func(r *gin.Engine)) {
 }
 
 // Logger 记录每一个请求的日志
-func Logger() gin.HandlerFunc {
+func loggerHandle() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
 		ctt, ss := logger.CreateSpan(c.Request.Context(), c.Request.URL.Path)
