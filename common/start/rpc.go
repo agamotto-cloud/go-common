@@ -10,13 +10,14 @@ import (
 	"time"
 )
 
-// HttpServer 启动http服务
+// RpcServer HttpServer 启动http服务
 func RpcServer(srvReg func(srv *grpc.Server)) {
 	//设置监听9000端口,添加统一前置处理器
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(unaryInterceptor,
-			otelgrpc.UnaryServerInterceptor()),
-		//grpc.ChainStreamInterceptor(streamInterceptor, otelgrpc.StreamServerInterceptor()),
+		grpc.ChainUnaryInterceptor(
+			otelgrpc.UnaryServerInterceptor(),
+			unaryInterceptor,
+		),
 	}
 
 	srv := grpc.NewServer(opts...)
@@ -32,40 +33,25 @@ func RpcServer(srvReg func(srv *grpc.Server)) {
 	}
 }
 
-//func streamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-//	t := time.Now()
-//	ctt, span := logger.CreateSpan(ss.Context(), info.FullMethod)
-//	defer span.End()
-//	// 请求前
-//	log1 := log.Ctx(ctt)
-//	log1.Info().Msgf("请求接口 %s", info.FullMethod)
-//
-//	return err
-//
-//}
-
 func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 
-	// 生成请求的 ID（示例中使用时间戳）
-	//如果ctx中有traceid则使用ctx中的traceid
-	//logger.CreateSpan()
 	t := time.Now()
-	ctt, ss := logger.CreateSpan(ctx, info.FullMethod)
+	ctx, span := logger.CreateSpan(ctx, info.FullMethod)
+	defer span.End()
 
-	defer ss.End()
 	// 请求前
-	log1 := log.Ctx(ctt)
-	log1.Info().Msgf("请求接口 %s", info.FullMethod)
+	logg := log.Ctx(ctx)
+	logg.Info().Msgf("请求接口 %s", info.FullMethod)
 
 	// 调用后续处理器
-	resp, err := handler(ctt, req)
+	resp, err := handler(ctx, req)
 
 	//// 请求后
 	latency := time.Since(t)
 
-	log1.Info().Bool("status", err == nil).
+	logg.Info().Bool("status", err == nil).
 		Dur("latency", latency).
-		Msgf("请求接口 %s 结果 %t 耗时 %s", info.FullMethod, err == nil, latency.String())
+		Msgf("接口返回 %s 结果 %t 耗时 %s", info.FullMethod, err == nil, latency.String())
 
 	return resp, err
 }

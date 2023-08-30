@@ -3,6 +3,7 @@ syntax = "proto3";
 package user;
 
 service UserService {
+
   // 创建用户
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
 

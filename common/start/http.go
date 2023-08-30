@@ -72,6 +72,6 @@ func loggerHandle() gin.HandlerFunc {
 		status := c.Writer.Status()
 		log1.Info().Int("status", status).
 			Dur("latency", latency).
-			Msgf("请求接口 %s 结果 %d 耗时 %s", c.Request.URL.Path, status, latency.String())
+			Msgf("接口返回 %s 结果 %d 耗时 %s", c.Request.URL.Path, status, latency.String())
 	}
 }
