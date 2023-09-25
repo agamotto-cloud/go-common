@@ -1,8 +1,9 @@
 package config
 
 type ServerConfig struct {
-	Port int
-	Name string
+	Port           int
+	Name           string
+	ConnectGateway string `mapstructure:"connect-gateway"`
 }
 
 type MysqlConfig struct {

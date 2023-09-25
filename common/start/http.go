@@ -36,12 +36,19 @@ func HttpServer(routerReg func(r *gin.Engine)) {
 		Addr:    ":" + strconv.Itoa(serverConfig.Port),
 		Handler: router,
 	}
+
 	go func() {
 		// 服务连接
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error().Err(err).Msg("listen")
 		}
 	}()
+	if serverConfig.ConnectGateway != "" {
+		go func() {
+			connectGateway(serverConfig.ConnectGateway, srv)
+		}()
+	}
+
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	<-quit

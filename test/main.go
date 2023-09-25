@@ -10,6 +10,7 @@ import (
 	_ "github.com/agamotto-cloud/go-common/common/discovery"
 	"github.com/agamotto-cloud/go-common/common/start"
 	"github.com/agamotto-cloud/go-common/test/rpc"
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 )
@@ -38,7 +39,14 @@ func main() {
 		usergrpc.RegisterUserServiceServer(srv, rpc.UserServiceServer{})
 	})
 	go rpc.CallRpc()
-	start.HttpServer(nil)
+	start.HttpServer(func(r *gin.Engine) {
+		r.GET("/test", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "test",
+			})
+		})
+
+	})
 
 	data.GlobalDB.Exec("select 1 from dual")
 
