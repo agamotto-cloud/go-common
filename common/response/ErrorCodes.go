@@ -8,8 +8,8 @@ type AgamottoError interface {
 	GetCode() int
 }
 type RespError struct {
-	code    ErrorCode
-	message string
+	Code    ErrorCode
+	Message string
 }
 
 func (e RespError) Error() string {
@@ -17,11 +17,11 @@ func (e RespError) Error() string {
 }
 
 func (e RespError) GetCode() int {
-	return int(e.code)
+	return int(e.Code)
 }
 
 func (e RespError) String() string {
-	return e.message
+	return e.Message
 }
 
 const (
