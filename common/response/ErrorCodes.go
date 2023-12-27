@@ -7,6 +7,22 @@ type AgamottoError interface {
 	Error() string
 	GetCode() int
 }
+type RespError struct {
+	code    ErrorCode
+	message string
+}
+
+func (e RespError) Error() string {
+	return e.String()
+}
+
+func (e RespError) GetCode() int {
+	return int(e.code)
+}
+
+func (e RespError) String() string {
+	return e.message
+}
 
 const (
 	SystemError   ErrorCode = 7
